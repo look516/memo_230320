@@ -69,6 +69,8 @@ public class PostRestController {
 		int userId = (int)session.getAttribute("userId");
 		String userLoginId = (String)session.getAttribute("userLoginId");
 		
+		// 항상 디버깅 걸어보고 어디서부터 안 되는지 확인
+		
 		// BO update
 		postBO.updatePost(userId, userLoginId, postId, subject, content, file);
 		

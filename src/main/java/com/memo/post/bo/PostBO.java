@@ -63,17 +63,30 @@ public class PostBO {
 			MultipartFile file) {
 		// 업데이트 대상인 기존 글을 가져와본다. (validation, 이미지 교체시 기존 이미지 제거를 위해)
 		Post post = postMapper.selectPostByPostIdAndUserId(postId, userId);
-		logger.warn("###[글 수정] post is null. postId:{}, userId:{}", postId, userId); // 임시
+		//logger.warn("###[글 수정] post is null. postId:{}, userId:{}", postId, userId); // 임시 test
 		if (post == null) {
 			// System.out.println(post.getId()); 락을 걸어서 느려지게 함 / 다른 스레드를 느리게 만든다. 절대 사용 금지
 			// 대신 적절히 warn debug info 등 수준을 정해서 logger 이용해서 로그를 찍음
 			logger.warn("###[글 수정] post is null. postId:{}, userId:{}", postId, userId);
-			
+			return;
 		}
 		
 		// 파일이 비어있지 않다면 업로드 후 imagePath 얻어옴
 		// 업로드가 성공하면 기존 이미지 제거
+		String  imagePath = null;
+		if (file != null) {
+			// 업로드
+			imagePath = fileManager.saveFile(userLoginId, file);
+			
+			// 기존 이미지 제거
+			// 업로드가 성공했고, 기존 이미지 존재하는 경우
+			if (imagePath != null && post.getImagePath() != null) {
+				// 이미지 제거
+				fileManager.deleteFile(post.getImagePath());
+			}
+		}
 		
 		// 글 업데이트
+		postMapper.updatePostByPostIdAndUserId(postId, userId, subject, content, imagePath);
 	}
 }
