@@ -27,8 +27,80 @@
 			
 			<div>
 				<a href="/post/post_list_view" class="btn btn-dark">목록</a>
-				<button type="button" id="updateBtn" class="btn btn-warning">수정</button>
+				<button type="button" id="updateBtn" class="btn btn-warning" data-post-id="${post.id}">수정</button>
 			</div>
 		</div>
 	</div>
 </div>
+
+
+
+
+<script>
+	$(document).ready(function() {
+		// 수정 버튼 클릭
+		$('#updateBtn').on('click', function() {
+			//alert(999);
+			
+			let subject = $('#subject').val().trim();
+			let content = $('#content').val();
+			let file = $('#file').val(); //C:\fakepath\ticket.jpg
+			
+			if (!subject) {
+				alert("제목을 입력하세요");
+				return;
+			}
+			
+			if (!content) {
+				alert("내용을 입력하세요");
+				return;
+			}
+			
+			console.log(file);
+			
+			// 파일이 업로드된 경우 확장자 체크
+			if (file) {
+				let ext = file.split(".").pop().toLowerCase();
+				//alert(ext);
+				if ($.inArray(ext, ['jpg', 'jpeg', 'gif', 'png']) == -1) {
+					alert("이미지 파일만 업로드 할 수 있습니다.");
+					$("#file").val(""); // 파일을 비운다.
+					return;
+				}
+			}
+			
+			// 폼태그를 스크립트에서 만든다.
+			let postId = $(this).data('post-id');
+			//alert(postId);
+			let formData = new FormData();
+			formData.append("postId", postId);
+			formData.append("subject", subject);
+			formData.append("content", content);
+			formData.append("file", $('#file')[0].files[0]);
+			
+			// ajax
+			$.ajax({
+				// request
+				type:"put"
+				, url:"/post/update"
+				, data:formData
+				, enctype:"multipart/form-data" // 파일 업로드를 위한 필수 설정
+				, processData:false // 파일 업로드를 위한 필수 설정
+				, contentType:false // 파일 업로드를 위한 필수 설정
+				
+				// response
+				, success:function(data) {
+					if (data.code == 1) {
+						alert("메모가 수정되었습니다.");
+						location.reload(true);
+					} else {
+						alert(data.errorMessage);
+					}
+				}
+				, error:function(request, status, error) {
+					alert("메모 수정 실패했습니다.");
+				}
+			});
+		});
+	});
+</script>

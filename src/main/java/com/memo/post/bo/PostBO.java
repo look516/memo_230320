@@ -2,6 +2,8 @@ package com.memo.post.bo;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,6 +14,11 @@ import com.memo.post.domain.Post;
 
 @Service
 public class PostBO {
+	
+	
+	//private Logger logger = LoggerFactory.getLogger(PostBO.class);
+	private Logger logger = LoggerFactory.getLogger(this.getClass());
+	
 	
 	@Autowired
 	private PostMapper postMapper; // mybatis
@@ -43,5 +50,30 @@ public class PostBO {
 	
 	public Post getPostByPostIdAndUserId(int postId, int userId) {
 		return postMapper.selectPostByPostIdAndUserId(postId, userId);
+	}
+	
+	
+	
+	
+	
+	
+	
+	public void updatePost(int userId, String userLoginId,
+			int postId, String subject, String content,
+			MultipartFile file) {
+		// 업데이트 대상인 기존 글을 가져와본다. (validation, 이미지 교체시 기존 이미지 제거를 위해)
+		Post post = postMapper.selectPostByPostIdAndUserId(postId, userId);
+		logger.warn("###[글 수정] post is null. postId:{}, userId:{}", postId, userId); // 임시
+		if (post == null) {
+			// System.out.println(post.getId()); 락을 걸어서 느려지게 함 / 다른 스레드를 느리게 만든다. 절대 사용 금지
+			// 대신 적절히 warn debug info 등 수준을 정해서 logger 이용해서 로그를 찍음
+			logger.warn("###[글 수정] post is null. postId:{}, userId:{}", postId, userId);
+			
+		}
+		
+		// 파일이 비어있지 않다면 업로드 후 imagePath 얻어옴
+		// 업로드가 성공하면 기존 이미지 제거
+		
+		// 글 업데이트
 	}
 }
