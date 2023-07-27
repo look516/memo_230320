@@ -103,6 +103,11 @@
 			});
 		});
 		
+		
+		
+		
+		
+		
 		// 삭제
 		$('#deleteBtn').on('click', function() {
 			//alert("삭제");
