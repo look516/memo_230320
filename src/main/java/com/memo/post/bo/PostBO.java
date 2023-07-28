@@ -1,5 +1,6 @@
 package com.memo.post.bo;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -20,6 +21,10 @@ public class PostBO {
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 	
 	
+	
+	private static final int POST_MAX_SIZE = 3;
+	
+	
 	@Autowired
 	private PostMapper postMapper; // mybatis
 	
@@ -28,8 +33,54 @@ public class PostBO {
 	
 	// input: userId(글쓴이)
 	// output: List<Post>
-	public List<Post> getPostListByUserId(int userId) {
-		return postMapper.selectPostListByUserId(userId);
+	public List<Post> getPostListByUserId(int userId, Integer prevId, Integer nextId) {
+		// 게시글 번호: 10 9 8 | 7 6 5 | 4 3 2 | 1
+		// 만약 4 3 2 페이지에 있을 때
+		// 1) 다음: 2보다 작은 3개 DESC
+		// 2) 이전: 4보다 큰 3개 ASC(5 6 7) => List reverse(7 6 5)
+		// 3) 첫페이지일 때(이전, 다음 없음) DESC 3개
+		// 마지막 페이지일 때는??
+		// 맨 앞 페이지 맨 뒷 페이지로 이동 시에는 prevId == 0 ??
+		// 이전은 계속 누르면 무한으로 돌고 다음은 계속 누르면 에러나고 => 해결 how to?
+		
+		String direction = null; // 방향
+		Integer standardId = null; // 기준 postId
+		if (prevId != null) {
+			// 이전
+			direction = "prev";
+			standardId = prevId;
+			
+			// get list
+			List<Post> postList = postMapper.selectPostListByUserId(userId, direction, standardId, POST_MAX_SIZE);
+			
+			// reverse => 1) 내가 구현 2) 메소드 찾기
+			// 5 6 7 => 7 6 5
+			Collections.reverse(postList); // 뒤집고 저장까지 해준다.
+			
+			// return
+			return postList; // method 종료
+			
+		} else if (nextId != null) {
+			// 다음
+			direction = "next";
+			standardId = nextId;
+		}
+		
+		
+		return postMapper.selectPostListByUserId(userId, direction, standardId, POST_MAX_SIZE);
+	}
+	
+	// 이전 방향의 끝인지 확인
+	// input: prevId, userId
+	// output: boolean
+	public boolean isPrevLastPage(int prevId, int userId) {
+		int postId = postMapper.selectPostIdByUserIdAndSort(userId, "DESC");
+		return postId == prevId; // 같으면 끝, 아니면 끝 아님
+	}
+	
+	// 다음 방향의 끝인지 확인
+	public boolean isNextLastPage(int nextId, int userId) {
+		return nextId == postMapper.selectPostIdByUserIdAndSort(userId, "ASC");
 	}
 	
 	public int addPost(int userId, String userLoginId,

@@ -10,6 +10,7 @@
 		
 		<div class="d-flex justify-content-end my-4">
 			<input type="file" id="file" accept=".jpg, .jpeg, .png, .gif">
+			<button type="button" id="imageDeleteBtn" class="btn btn-secondary">파일 비우기</button>
 		</div>
 		
 		<div class="d-flex justify-content-between">
